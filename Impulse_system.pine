@@ -1,0 +1,25 @@
+//@version=5
+indicator('Impulse System')
+ema_periods = 13
+ema = ta.ema(close, ema_periods)
+
+
+macd_length_fast = input.int(defval=12, minval=1, title='MACD Fast Length')
+macd_length_slow = input.int(defval=26, minval=1, title='MACD Slow Length')
+macd_length_signal = input.int(defval=9, minval=1, title='MACD Signal Length')
+
+macd_ma_fast = ta.ema(close, macd_length_fast)
+macd_ma_slow = ta.ema(close, macd_length_slow)
+macd = macd_ma_fast - macd_ma_slow
+macd_signal = ta.ema(macd, macd_length_signal)
+macd_histogram = macd - macd_signal
+
+
+elder_bulls = ema[0] > ema[1] and macd_histogram[0] > macd_histogram[1]
+elder_bears = ema[0] < ema[1] and macd_histogram[0] < macd_histogram[1]
+elder_color = elder_bulls ? color.green : elder_bears ? color.red : color.blue
+
+is_oc_enough = math.abs(open - close) / close > 0.0008
+final_elder_color = is_oc_enough ? elder_color : color.blue
+
+barcolor(final_elder_color)
